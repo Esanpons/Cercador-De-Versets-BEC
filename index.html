@@ -12,14 +12,20 @@
 <body>
     <h1>Cercador de versets – Bíblia BEC</h1>
 
+    <select id="searchMode">
+        <option value="refs">Grup de versets</option>
+        <option value="words">Paraules</option>
+    </select>
+
     <!-- ───────────────── Ajuda plegable ───────────────── -->
-    <details>
+    <details id="helpBlock">
         <summary>Com escriure cites (fes clic per mostrar exemples)</summary>
-        <p style="margin-top:0.5rem;">
-            Escriu cites separades per comes o bé cada una en línia/bullets.
-            Pots afegir els teus àlies al bloc JSON que hi ha a sota.
-        </p>
-        <pre style="margin-top:-0.5rem;">
+        <div id="helpRefs">
+            <p style="margin-top:0.5rem;">
+                Escriu cites separades per comes o bé cada una en línia/bullets.
+                Pots afegir els teus àlies al bloc JSON que hi ha a sota.
+            </p>
+            <pre style="margin-top:-0.5rem;">
                 Mateu 23:23-29, 1 Timoteu 1:8-10, Colossencs 2:14,16-17
 
                 Mateu 23:23-29
@@ -29,27 +35,52 @@
                 - Mateu 23:23-29
                 - 1 Timoteu 1:8-10
                 - Colossencs 2:14,16-17
-        </pre>
+            </pre>
+        </div>
+        <div id="helpWords" style="display:none">
+            <p style="margin-top:0.5rem;">
+                Escriu una o més paraules separades per espais i prem &quot;Cerca
+                paraules&quot;. Pots optar per coincidència exacta amb la casella
+                corresponent.
+            </p>
+        </div>
     </details>
 
-    <textarea id="input" placeholder="Ex: Mateu 23:23-29, 1 Timoteu 1:8-10"></textarea>
-    <br />
-    <button id="cerca">Cerca</button>
+    <div id="refContainer">
+        <textarea id="input" placeholder="Ex: Mateu 23:23-29, 1 Timoteu 1:8-10"></textarea>
+        <br />
+        <button id="cerca">Cerca</button>
+    </div>
+
+    <div id="wordContainer" style="display:none">
+        <input id="paraulaInput" type="text" placeholder="Paraules a cercar" />
+        <label><input type="checkbox" id="exactCheck" /> Coincidència exacta</label>
+        <button id="cercaParaula">Cerca paraules</button>
+    </div>
+    <button id="netejar">Netejar</button>
     <div id="carregant" style="display:none; margin-top:1rem;">Carregant Bíblia…</div>
     <div id="resultats"></div>
 
     <!-- ───────────── Àlies editables en JSON ───────────── -->
-    <script id="aliasData" type="application/json">
+    <script id="dicctionaryData" type="application/json">
         {
             "genesis": "Gènesi",
             "genesís": "Gènesi",
             "2 croniques": "2a Cròniques",
-            "2 croniques": "2a Cròniques"
+            "2 croniques": "2a Cròniques",
+            "2 Reis":"2a dels Reis",
+            "1 Reis":"1a dels Reis",
+            "Salm": "Salms",
+            "2 Corintis":"2a Corintis",
+            "1 Corintis":"1a Corintis",
+            "2 Timoteu":"2a Timoteu",
+            "1 Tim":"1a Timoteu"
         }
   </script>
 
     <!-- Codi JavaScript extern (carregat al final) -->
     <script src="app.js" defer></script>
+    <script src="word-search.js" defer></script>
 </body>
 
 </html>
