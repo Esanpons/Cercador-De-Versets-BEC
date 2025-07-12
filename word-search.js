@@ -7,6 +7,7 @@
   const wordInput  = document.getElementById('paraulaInput');
   const exactChk   = document.getElementById('exactCheck');
   const btn        = document.getElementById('cercaParaula');
+  const clearBtn   = document.getElementById('netejar');
   const loading    = document.getElementById('carregant');
   const outDiv     = document.getElementById('resultats');
 
@@ -80,6 +81,12 @@
   btn.addEventListener('click', search);
   wordInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) search();
+  });
+  clearBtn.addEventListener('click', () => {
+    document.getElementById('input').value = '';
+    wordInput.value = '';
+    exactChk.checked = false;
+    outDiv.innerHTML = '';
   });
 
   function search() {
