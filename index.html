@@ -32,13 +32,22 @@
         </pre>
     </details>
 
-    <textarea id="input" placeholder="Ex: Mateu 23:23-29, 1 Timoteu 1:8-10"></textarea>
-    <br />
-    <button id="cerca">Cerca</button>
-<br />
+    <select id="searchMode">
+        <option value="refs">Grup de versets</option>
+        <option value="words">Paraules</option>
+    </select>
 
-<input id="paraulaInput" type="text" placeholder="Paraules a cercar" />
-<button id="cercaParaula">Cerca paraules</button>
+    <div id="refContainer">
+        <textarea id="input" placeholder="Ex: Mateu 23:23-29, 1 Timoteu 1:8-10"></textarea>
+        <br />
+        <button id="cerca">Cerca</button>
+    </div>
+
+    <div id="wordContainer" style="display:none">
+        <input id="paraulaInput" type="text" placeholder="Paraules a cercar" />
+        <label><input type="checkbox" id="exactCheck" /> Coincidència exacta</label>
+        <button id="cercaParaula">Cerca paraules</button>
+    </div>
     <div id="carregant" style="display:none; margin-top:1rem;">Carregant Bíblia…</div>
     <div id="resultats"></div>
 

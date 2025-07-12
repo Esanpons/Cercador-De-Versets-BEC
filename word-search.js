@@ -1,8 +1,25 @@
 (async () => {
+  const modeSel   = document.getElementById('searchMode');
+  const refCont   = document.getElementById('refContainer');
+  const wordCont  = document.getElementById('wordContainer');
   const wordInput = document.getElementById('paraulaInput');
-  const btn = document.getElementById('cercaParaula');
-  const loading = document.getElementById('carregant');
-  const outDiv = document.getElementById('resultats');
+  const exactChk  = document.getElementById('exactCheck');
+  const btn       = document.getElementById('cercaParaula');
+  const loading   = document.getElementById('carregant');
+  const outDiv    = document.getElementById('resultats');
+
+  function updateUI() {
+    if (modeSel.value === 'words') {
+      refCont.style.display  = 'none';
+      wordCont.style.display = '';
+    } else {
+      wordCont.style.display = 'none';
+      refCont.style.display  = '';
+    }
+  }
+
+  modeSel.addEventListener('change', updateUI);
+  updateUI();
 
   const normalize = str => (str || '')
     .normalize('NFD')
@@ -19,14 +36,16 @@
     const txt = await res.text();
     const xmlDoc = new DOMParser().parseFromString(txt, 'application/xml');
     Array.from(xmlDoc.getElementsByTagName('libro')).forEach(lib => {
-      const title = lib.getElementsByTagName('titulo')[0].textContent.trim();
+      const title = lib.getElementsByTagName('titulo')[0]?.textContent.trim();
       Array.from(lib.getElementsByTagName('capitulo')).forEach(cap => {
-        const capNum = cap.getElementsByTagName('num_capitulo')[0].textContent.trim();
-        const vers = cap.getElementsByTagName('versiculo')[0];
-        if (!vers) return;
-        const num = vers.getElementsByTagName('num_versiculo')[0].textContent.trim();
-        const text = vers.getElementsByTagName('texto_versiculo')[0].textContent.trim();
-        verses.push({book: title, cap: capNum, num, text});
+        const capNum = cap.getElementsByTagName('num_capitulo')[0]?.textContent.trim();
+        Array.from(cap.getElementsByTagName('versiculo')).forEach(v => {
+          const num  = v.getElementsByTagName('num_versiculo')[0]?.textContent.trim();
+          const text = v.getElementsByTagName('texto_versiculo')[0]?.textContent.trim();
+          if (capNum && num && text) {
+            verses.push({ book: title, cap: capNum, num, text });
+          }
+        });
       });
     });
   } catch (e) {
@@ -45,29 +64,36 @@
     const raw = wordInput.value.trim();
     if (!raw) return;
 
-    const words = raw.split(/\s+/).filter(Boolean);
+    const words = raw.split(/\s+/).map(w => normalize(w)).filter(Boolean);
 
-    words.forEach(word => {
-      const norm = normalize(word);
-      const matches = verses.filter(v => normalize(v.text).includes(norm));
+    const matches = verses.filter(v => {
+      const textNorm = normalize(v.text);
+      return words.some(w => {
+        if (exactChk.checked) {
+          const tokens = textNorm.split(' ');
+          return tokens.includes(w);
+        }
+        return textNorm.includes(w);
+      });
+    });
 
-      if (matches.length) {
-        matches.forEach(m => {
-          const bloc = document.createElement('div');
-          bloc.className = 'bloc';
-          const tit = document.createElement('div');
-          tit.className = 'titol';
-          tit.textContent = `${m.book.toUpperCase()} ${m.cap}:${m.num}`;
-          bloc.appendChild(tit);
-          bloc.appendChild(document.createTextNode(m.text));
-          outDiv.appendChild(bloc);
-        });
-      } else {
-        const d = document.createElement('div');
-        d.className = 'error';
-        d.textContent = `No s'han trobat versets per a '${word}'`;
-        outDiv.appendChild(d);
-      }
+    if (!matches.length) {
+      const d = document.createElement('div');
+      d.className = 'error';
+      d.textContent = 'No s\'han trobat versets';
+      outDiv.appendChild(d);
+      return;
+    }
+
+    matches.forEach(m => {
+      const bloc = document.createElement('div');
+      bloc.className = 'bloc';
+      const tit = document.createElement('div');
+      tit.className = 'titol';
+      tit.textContent = `${m.book.toUpperCase()} ${m.cap}:${m.num}`;
+      bloc.appendChild(tit);
+      bloc.appendChild(document.createTextNode(m.text));
+      outDiv.appendChild(bloc);
     });
   }
 })();
