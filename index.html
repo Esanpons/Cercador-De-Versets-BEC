@@ -12,14 +12,20 @@
 <body>
     <h1>Cercador de versets – Bíblia BEC</h1>
 
+    <select id="searchMode">
+        <option value="refs">Grup de versets</option>
+        <option value="words">Paraules</option>
+    </select>
+
     <!-- ───────────────── Ajuda plegable ───────────────── -->
-    <details>
+    <details id="helpBlock">
         <summary>Com escriure cites (fes clic per mostrar exemples)</summary>
-        <p style="margin-top:0.5rem;">
-            Escriu cites separades per comes o bé cada una en línia/bullets.
-            Pots afegir els teus àlies al bloc JSON que hi ha a sota.
-        </p>
-        <pre style="margin-top:-0.5rem;">
+        <div id="helpRefs">
+            <p style="margin-top:0.5rem;">
+                Escriu cites separades per comes o bé cada una en línia/bullets.
+                Pots afegir els teus àlies al bloc JSON que hi ha a sota.
+            </p>
+            <pre style="margin-top:-0.5rem;">
                 Mateu 23:23-29, 1 Timoteu 1:8-10, Colossencs 2:14,16-17
 
                 Mateu 23:23-29
@@ -29,13 +35,16 @@
                 - Mateu 23:23-29
                 - 1 Timoteu 1:8-10
                 - Colossencs 2:14,16-17
-        </pre>
+            </pre>
+        </div>
+        <div id="helpWords" style="display:none">
+            <p style="margin-top:0.5rem;">
+                Escriu una o més paraules separades per espais i prem &quot;Cerca
+                paraules&quot;. Pots optar per coincidència exacta amb la casella
+                corresponent.
+            </p>
+        </div>
     </details>
-
-    <select id="searchMode">
-        <option value="refs">Grup de versets</option>
-        <option value="words">Paraules</option>
-    </select>
 
     <div id="refContainer">
         <textarea id="input" placeholder="Ex: Mateu 23:23-29, 1 Timoteu 1:8-10"></textarea>

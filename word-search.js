@@ -1,20 +1,26 @@
 (async () => {
-  const modeSel   = document.getElementById('searchMode');
-  const refCont   = document.getElementById('refContainer');
-  const wordCont  = document.getElementById('wordContainer');
-  const wordInput = document.getElementById('paraulaInput');
-  const exactChk  = document.getElementById('exactCheck');
-  const btn       = document.getElementById('cercaParaula');
-  const loading   = document.getElementById('carregant');
-  const outDiv    = document.getElementById('resultats');
+  const modeSel    = document.getElementById('searchMode');
+  const refCont    = document.getElementById('refContainer');
+  const wordCont   = document.getElementById('wordContainer');
+  const helpRefs   = document.getElementById('helpRefs');
+  const helpWords  = document.getElementById('helpWords');
+  const wordInput  = document.getElementById('paraulaInput');
+  const exactChk   = document.getElementById('exactCheck');
+  const btn        = document.getElementById('cercaParaula');
+  const loading    = document.getElementById('carregant');
+  const outDiv     = document.getElementById('resultats');
 
   function updateUI() {
     if (modeSel.value === 'words') {
       refCont.style.display  = 'none';
       wordCont.style.display = '';
+      if (helpWords) helpWords.style.display = '';
+      if (helpRefs)  helpRefs.style.display  = 'none';
     } else {
       wordCont.style.display = 'none';
       refCont.style.display  = '';
+      if (helpWords) helpWords.style.display = 'none';
+      if (helpRefs)  helpRefs.style.display  = '';
     }
   }
 
