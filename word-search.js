@@ -38,11 +38,17 @@
     Array.from(xmlDoc.getElementsByTagName('libro')).forEach(lib => {
       const title = lib.getElementsByTagName('titulo')[0]?.textContent.trim();
       Array.from(lib.getElementsByTagName('capitulo')).forEach(cap => {
-        const capNum = cap.getElementsByTagName('num_capitulo')[0]?.textContent.trim();
+        const capNum = parseInt(
+          cap.getElementsByTagName('num_capitulo')[0]?.textContent.trim(),
+          10
+        );
         Array.from(cap.getElementsByTagName('versiculo')).forEach(v => {
-          const num  = v.getElementsByTagName('num_versiculo')[0]?.textContent.trim();
+          const num = parseInt(
+            v.getElementsByTagName('num_versiculo')[0]?.textContent.trim(),
+            10
+          );
           const text = v.getElementsByTagName('texto_versiculo')[0]?.textContent.trim();
-          if (capNum && num && text) {
+          if (!Number.isNaN(capNum) && !Number.isNaN(num) && text) {
             verses.push({ book: title, cap: capNum, num, text });
           }
         });
@@ -85,14 +91,33 @@
       return;
     }
 
-    matches.forEach(m => {
+    const groups = [];
+    let cur = null;
+    matches.forEach(v => {
+      if (
+        cur &&
+        cur.book === v.book &&
+        cur.cap === v.cap &&
+        cur.end + 1 === v.num
+      ) {
+        cur.end = v.num;
+        cur.texts.push(v.text);
+      } else {
+        if (cur) groups.push(cur);
+        cur = { book: v.book, cap: v.cap, start: v.num, end: v.num, texts: [v.text] };
+      }
+    });
+    if (cur) groups.push(cur);
+
+    groups.forEach(g => {
       const bloc = document.createElement('div');
       bloc.className = 'bloc';
       const tit = document.createElement('div');
       tit.className = 'titol';
-      tit.textContent = `${m.book.toUpperCase()} ${m.cap}:${m.num}`;
+      const range = g.start === g.end ? g.start : `${g.start}-${g.end}`;
+      tit.textContent = `${g.book.toUpperCase()} ${g.cap}:${range}`;
       bloc.appendChild(tit);
-      bloc.appendChild(document.createTextNode(m.text));
+      bloc.appendChild(document.createTextNode(g.texts.join(' ')));
       outDiv.appendChild(bloc);
     });
   }
