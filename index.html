@@ -48,16 +48,18 @@
 
     <div id="refContainer">
         <textarea id="input" placeholder="Ex: Mateu 23:23-29, 1 Timoteu 1:8-10"></textarea>
-        <br />
-        <button id="cerca">Cerca</button>
     </div>
 
     <div id="wordContainer" style="display:none">
         <input id="paraulaInput" type="text" placeholder="Paraules a cercar" />
         <label><input type="checkbox" id="exactCheck" /> Coincidència exacta</label>
-        <button id="cercaParaula">Cerca paraules</button>
     </div>
-    <button id="netejar">Netejar</button>
+
+    <div class="button-row">
+        <button id="cerca">Cerca</button>
+        <button id="cercaParaula">Cerca paraules</button>
+        <button id="netejar">Netejar</button>
+    </div>
     <div id="carregant" style="display:none; margin-top:1rem;">Carregant Bíblia…</div>
     <div id="resultats"></div>
 

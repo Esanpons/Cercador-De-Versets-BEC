@@ -7,6 +7,7 @@
   const wordInput  = document.getElementById('paraulaInput');
   const exactChk   = document.getElementById('exactCheck');
   const btn        = document.getElementById('cercaParaula');
+  const refBtn     = document.getElementById('cerca');
   const clearBtn   = document.getElementById('netejar');
   const loading    = document.getElementById('carregant');
   const outDiv     = document.getElementById('resultats');
@@ -17,11 +18,15 @@
       wordCont.style.display = '';
       if (helpWords) helpWords.style.display = '';
       if (helpRefs)  helpRefs.style.display  = 'none';
+      if (refBtn) refBtn.style.display = 'none';
+      if (btn)    btn.style.display    = '';
     } else {
       wordCont.style.display = 'none';
       refCont.style.display  = '';
       if (helpWords) helpWords.style.display = 'none';
       if (helpRefs)  helpRefs.style.display  = '';
+      if (refBtn) refBtn.style.display = '';
+      if (btn)    btn.style.display    = 'none';
     }
   }
 
