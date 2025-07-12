@@ -19,7 +19,7 @@
       if (helpWords) helpWords.style.display = '';
       if (helpRefs)  helpRefs.style.display  = 'none';
       if (refBtn) refBtn.style.display = 'none';
-      if (btn)    btn.style.display    = '';
+      if (btn)    btn.style.display    = 'inline-block';
     } else {
       wordCont.style.display = 'none';
       refCont.style.display  = '';
