@@ -113,4 +113,27 @@ summary {
   font-weight: bold;
   margin-bottom: 0.25rem;
 }
+
+.copy-row {
+  margin-top: 0.5rem;
+  text-align: right;
+}
+
+.verset {
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: #333;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
   

@@ -11,6 +11,20 @@
   const clearBtn   = document.getElementById('netejar');
   const loading    = document.getElementById('carregant');
   const outDiv     = document.getElementById('resultats');
+  const copyAllBtn = document.getElementById('copiarTots');
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.style.display = 'block';
+    requestAnimationFrame(() => {
+      t.style.opacity = '1';
+    });
+    setTimeout(() => {
+      t.style.opacity = '0';
+      setTimeout(() => { t.style.display = 'none'; }, 300);
+    }, 1000);
+  }
 
   function updateUI() {
     if (modeSel.value === 'words') {
@@ -92,10 +106,12 @@
     wordInput.value = '';
     exactChk.checked = false;
     outDiv.innerHTML = '';
+    copyAllBtn.style.display = 'none';
   });
 
   function search() {
     outDiv.innerHTML = '';
+    copyAllBtn.style.display = 'none';
     const raw = wordInput.value.trim();
     if (!raw) return;
 
@@ -144,10 +160,35 @@
       const tit = document.createElement('div');
       tit.className = 'titol';
       const range = g.start === g.end ? g.start : `${g.start}-${g.end}`;
-      tit.textContent = `${g.book.toUpperCase()} ${g.cap}:${range}`;
+      const reference = `${g.book.toUpperCase()} ${g.cap}:${range}`;
+      tit.textContent = reference;
       bloc.appendChild(tit);
-      bloc.appendChild(document.createTextNode(g.texts.join(' ')));
+      const text = g.texts.join(' ');
+      const txtDiv = document.createElement('div');
+      txtDiv.className = 'verset';
+      txtDiv.textContent = text;
+      txtDiv.dataset.clip = `${reference}\n${text}`;
+      bloc.appendChild(txtDiv);
+      const copyBtn = document.createElement('button');
+      copyBtn.textContent = 'Copiar';
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(txtDiv.dataset.clip);
+        showToast('Copiat');
+      });
+      bloc.appendChild(copyBtn);
       outDiv.appendChild(bloc);
     });
+
+    const versets = outDiv.getElementsByClassName('verset');
+    if (versets.length) {
+      copyAllBtn.style.display = '';
+      copyAllBtn.onclick = () => {
+        const all = Array.from(versets)
+          .map(v => v.dataset.clip)
+          .join('\n\n');
+        navigator.clipboard.writeText(all);
+        showToast('Copiat tot');
+      };
+    }
   }
 })();
