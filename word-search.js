@@ -47,9 +47,20 @@
             v.getElementsByTagName('num_versiculo')[0]?.textContent.trim(),
             10
           );
-          const text = v.getElementsByTagName('texto_versiculo')[0]?.textContent.trim();
-          if (!Number.isNaN(capNum) && !Number.isNaN(num) && text) {
-            verses.push({ book: title, cap: capNum, num, text });
+          const rawText = v.getElementsByTagName('texto_versiculo')[0]?.textContent.trim();
+          if (!Number.isNaN(capNum) && !Number.isNaN(num) && rawText) {
+            const lines = rawText.split(/\r?\n/);
+            let start = num;
+            let end = num;
+            const cleaned = lines.map(l => {
+              const m = l.match(/^\s*(\d+)\s+(.*)$/);
+              if (m) {
+                end = parseInt(m[1], 10);
+                return m[2];
+              }
+              return l;
+            }).join(' ');
+            verses.push({ book: title, cap: capNum, start, end, text: cleaned });
           }
         });
       });
@@ -98,13 +109,13 @@
         cur &&
         cur.book === v.book &&
         cur.cap === v.cap &&
-        cur.end + 1 === v.num
+        v.start <= cur.end + 1
       ) {
-        cur.end = v.num;
+        cur.end = Math.max(cur.end, v.end);
         cur.texts.push(v.text);
       } else {
         if (cur) groups.push(cur);
-        cur = { book: v.book, cap: v.cap, start: v.num, end: v.num, texts: [v.text] };
+        cur = { book: v.book, cap: v.cap, start: v.start, end: v.end, texts: [v.text] };
       }
     });
     if (cur) groups.push(cur);
