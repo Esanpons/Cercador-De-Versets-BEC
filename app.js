@@ -192,7 +192,7 @@
       const txtDiv = document.createElement("div");
       txtDiv.className = "verset";
       txtDiv.textContent = text;
-      txtDiv.dataset.clip = `${reference} ${text}`;
+      txtDiv.dataset.clip = `${reference}\n${text}`;
       bloc.appendChild(txtDiv);
       const copyBtn = document.createElement("button");
       copyBtn.textContent = "Copiar";
@@ -218,7 +218,7 @@
       copyAllBtn.onclick = () => {
         const all = Array.from(versets)
           .map((v) => v.dataset.clip)
-          .join("\n");
+          .join("\n\n");
         navigator.clipboard.writeText(all);
         showToast("Copiat tot");
       };
