@@ -144,4 +144,21 @@ summary {
   transition: opacity 0.3s;
   pointer-events: none;
 }
+
+@media (max-width: 600px) {
+  body {
+    margin: 1rem;
+    padding: 0.5rem;
+  }
+  .button-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .button-row button {
+    width: 100%;
+  }
+  .copy-row {
+    text-align: center;
+  }
+}
   
