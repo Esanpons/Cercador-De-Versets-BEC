@@ -7,7 +7,10 @@
   const normalize = str => (str || '')
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   loading.style.display = 'block';
   let verses = [];
@@ -47,19 +50,18 @@
     words.forEach(word => {
       const norm = normalize(word);
       const matches = verses.filter(v => normalize(v.text).includes(norm));
+
       if (matches.length) {
-        const bloc = document.createElement('div');
-        bloc.className = 'bloc';
-        const tit = document.createElement('div');
-        tit.className = 'titol';
-        tit.textContent = `Resultats per "${word}"`;
-        bloc.appendChild(tit);
         matches.forEach(m => {
-          const p = document.createElement('div');
-          p.textContent = `${m.book.toUpperCase()} ${m.cap}:${m.num} ${m.text}`;
-          bloc.appendChild(p);
+          const bloc = document.createElement('div');
+          bloc.className = 'bloc';
+          const tit = document.createElement('div');
+          tit.className = 'titol';
+          tit.textContent = `${m.book.toUpperCase()} ${m.cap}:${m.num}`;
+          bloc.appendChild(tit);
+          bloc.appendChild(document.createTextNode(m.text));
+          outDiv.appendChild(bloc);
         });
-        outDiv.appendChild(bloc);
       } else {
         const d = document.createElement('div');
         d.className = 'error';
