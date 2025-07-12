@@ -4,6 +4,7 @@
   const btn = document.getElementById("cerca");
   const loading = document.getElementById("carregant");
   const outDiv = document.getElementById("resultats");
+  const copyAllBtn = document.getElementById("copiarTots");
 
   // ────────────────────────────────────────
   // Utilitats
@@ -92,6 +93,7 @@
 
   function process() {
     outDiv.innerHTML = "";
+    copyAllBtn.style.display = "none";
     const raw = inputEl.value.trim();
     if (!raw) return;
 
@@ -171,7 +173,16 @@
           v.getElementsByTagName("texto_versiculo")[0].textContent.trim()
         )
         .join(" ");
-      bloc.appendChild(document.createTextNode(text));
+      const txtDiv = document.createElement("div");
+      txtDiv.className = "verset";
+      txtDiv.textContent = text;
+      bloc.appendChild(txtDiv);
+      const copyBtn = document.createElement("button");
+      copyBtn.textContent = "Copiar";
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(text);
+      });
+      bloc.appendChild(copyBtn);
       outDiv.appendChild(bloc);
     });
 
@@ -182,5 +193,16 @@
       d.textContent = er;
       outDiv.appendChild(d);
     });
+
+    const versets = outDiv.getElementsByClassName("verset");
+    if (versets.length) {
+      copyAllBtn.style.display = "";
+      copyAllBtn.onclick = () => {
+        const all = Array.from(versets)
+          .map((v) => v.textContent)
+          .join("\n");
+        navigator.clipboard.writeText(all);
+      };
+    }
   }
 })();

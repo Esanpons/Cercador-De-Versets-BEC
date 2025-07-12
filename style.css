@@ -113,4 +113,14 @@ summary {
   font-weight: bold;
   margin-bottom: 0.25rem;
 }
+
+.copy-row {
+  margin-top: 0.5rem;
+  text-align: right;
+}
+
+.verset {
+  margin-bottom: 0.5rem;
+  display: block;
+}
   
