@@ -26,7 +26,7 @@
     loading.style.display = 'block';
     let xmlDoc;
     try {
-      const res = await fetch('IBEX_Biliba.xml');
+      const res = await fetch('ibec.xml');
       const txt = await res.text();
       xmlDoc = new DOMParser().parseFromString(txt, 'application/xml');
     } catch (e) {
