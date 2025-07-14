@@ -5,6 +5,7 @@
   const loading = document.getElementById("carregant");
   const outDiv = document.getElementById("resultats");
   const copyAllBtn = document.getElementById("copiarTots");
+
   function showToast(msg) {
     const t = document.getElementById("toast");
     if (!t) return;
@@ -43,42 +44,36 @@
   }
 
   // ────────────────────────────────────────
-  // Carregar XML
+  // Carregar JSON (substitueix l'antic XML)
   loading.style.display = "block";
-  let xmlDoc;
+  let books; // matriu de llibres
   try {
-    const res = await fetch("ibec.xml");
-    const txt = await res.text();
-    xmlDoc = new DOMParser().parseFromString(txt, "application/xml");
+    const res = await fetch("bec.json");
+    books = await res.json();
   } catch (e) {
-    loading.textContent = "No s’ha pogut carregar l’arxiu XML";
+    loading.textContent = "No s’ha pogut carregar l’arxiu JSON";
     throw e;
   }
 
   // Indexar
-  const llibreNodes = Array.from(xmlDoc.getElementsByTagName("libro"));
-  const index = {}; // { bookKey: { capNum: [versNodes] } }
+  const index = {}; // { bookKey: { capNum: [versObjects] } }
   const aliasMap = {}; // variant normalitzada => bookKey
 
-  llibreNodes.forEach((lib) => {
-    const titleNode = lib.getElementsByTagName("titulo")[0];
-    if (!titleNode) return;
-    const canon = titleNode.textContent.trim();
+  books.forEach((book) => {
+    const canon = (book.name || "").trim();
+    if (!canon) return;
     const bookKey = normalize(canon);
     index[bookKey] = {};
     aliasMap[bookKey] = bookKey;
 
-    // Capítols (un <capitulo> per vers)
-    Array.from(lib.getElementsByTagName("capitulo")).forEach((cap) => {
-      const capNum = parseInt(
-        cap.getElementsByTagName("num_capitulo")[0].textContent,
-        10
-      );
+    // Capítols
+    (book.chapters || []).forEach((chap) => {
+      const capNum = parseInt(chap.chapterNo, 10);
       if (!index[bookKey][capNum]) index[bookKey][capNum] = [];
-      index[bookKey][capNum].push(...cap.getElementsByTagName("versiculo"));
+      index[bookKey][capNum].push(...(chap.verses || []));
     });
 
-    // Aliases automàtics 1a/2a/3a
+    // Aliases automàtics 1a/2a/3a (ex. "1a Corintis")
     const m = canon.match(/^([1-3])a?\s+(.+)$/i);
     if (m) {
       const num = m[1];
@@ -155,7 +150,7 @@
         return;
       }
 
-      // Expandeix versSpec
+      // Expandeix versSpec (ex. 3-5,7)
       const targets = [];
       versSpec.split(",").forEach((chunk) => {
         if (/[-–]/.test(chunk)) {
@@ -166,17 +161,14 @@
         }
       });
 
-      const versesNodes = capData.filter((v) =>
-        targets.includes(
-          parseInt(v.getElementsByTagName("num_versiculo")[0].textContent, 10)
-        )
-      );
-      if (!versesNodes.length) {
+      // Selecciona versos
+      const verses = capData.filter((v) => targets.includes(parseInt(v.verseNo, 10)));
+      if (!verses.length) {
         errors.push(`Versos no trobats: ${ref}`);
         return;
       }
 
-      // Bloc
+      // Bloc / renderització
       const bloc = document.createElement("div");
       bloc.className = "bloc";
       const tit = document.createElement("div");
@@ -184,10 +176,8 @@
       const reference = `${bookRaw.toUpperCase()} ${cap}:${versSpec}`;
       tit.textContent = reference;
       bloc.appendChild(tit);
-      const text = versesNodes
-        .map((v) =>
-          v.getElementsByTagName("texto_versiculo")[0].textContent.trim()
-        )
+      const text = verses
+        .map((v) => (v.text || "").trim())
         .join(" ");
       const txtDiv = document.createElement("div");
       txtDiv.className = "verset";
