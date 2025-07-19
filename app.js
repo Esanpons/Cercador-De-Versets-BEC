@@ -1,9 +1,10 @@
-/* eslint-disable no-console */
 (async () => {
-  const inputEl = document.getElementById("input");
-  const btn = document.getElementById("cerca");
-  const loading = document.getElementById("carregant");
-  const outDiv = document.getElementById("resultats");
+  // ───────────── Elements del DOM ─────────────
+  const inputEl    = document.getElementById("input");
+  const btnSearch  = document.getElementById("cerca");
+  const btnClear   = document.getElementById("netejar");
+  const loading    = document.getElementById("carregant");
+  const outDiv     = document.getElementById("resultats");
   const copyAllBtn = document.getElementById("copiarTots");
 
   function showToast(msg) {
@@ -11,19 +12,13 @@
     if (!t) return;
     t.textContent = msg;
     t.style.display = "block";
-    requestAnimationFrame(() => {
-      t.style.opacity = "1";
-    });
+    requestAnimationFrame(() => (t.style.opacity = "1"));
     setTimeout(() => {
       t.style.opacity = "0";
-      setTimeout(() => {
-        t.style.display = "none";
-      }, 300);
+      setTimeout(() => (t.style.display = "none"), 300);
     }, 1000);
   }
 
-  // ────────────────────────────────────────
-  // Utilitats
   const normalize = (str) =>
     (str || "")
       .normalize("NFD")
@@ -33,99 +28,108 @@
       .replace(/\s+/g, " ")
       .trim();
 
-  // Sinònims manuals (provenen del bloc JSON editable)
+  // ───────────── Alias i llista de llibres ─────────────
   let customAliases = {};
   try {
     customAliases = JSON.parse(
       document.getElementById("dicctionaryData").textContent
     );
-  } catch (e) {
-    console.warn("Alias JSON malformat");
-  }
+  } catch {}
 
-  // ────────────────────────────────────────
-  // Carregar JSON (substitueix l'antic XML)
+  const fallbackNames = JSON.parse(
+    document.getElementById("bookNames").textContent
+  );
+
+  // ───────────── Carrega i indexa l'XML ─────────────
   loading.style.display = "block";
-  let books; // matriu de llibres
+
+  const index    = {};
+  const aliasMap = {};
+
   try {
-    const res = await fetch("bec.json");
-    books = await res.json();
-  } catch (e) {
-    loading.textContent = "No s’ha pogut carregar l’arxiu JSON";
-    throw e;
-  }
+    // 👇  Ruta actualitzada
+    const xmlText = await (await fetch("./data/CatalanBECBible.xml")).text();
+    const xml     = new DOMParser().parseFromString(xmlText, "text/xml");
 
-  // Indexar
-  const index = {}; // { bookKey: { capNum: [versObjects] } }
-  const aliasMap = {}; // variant normalitzada => bookKey
+    let bookCounter = 0;
+    xml.querySelectorAll("book").forEach((bookEl) => {
+      let bookName =
+        bookEl.getAttribute("name")     ||
+        bookEl.getAttribute("title")    ||
+        bookEl.getAttribute("fullname") ||
+        bookEl.getAttribute("id")       ||
+        bookEl.getAttribute("code");
 
-  books.forEach((book) => {
-    const canon = (book.name || "").trim();
-    if (!canon) return;
-    const bookKey = normalize(canon);
-    index[bookKey] = {};
-    aliasMap[bookKey] = bookKey;
+      if (!bookName) {
+        bookName = fallbackNames[bookCounter] || `Llibre ${bookCounter + 1}`;
+      }
+      bookCounter++;
 
-    // Capítols
-    (book.chapters || []).forEach((chap) => {
-      const capNum = parseInt(chap.chapterNo, 10);
-      if (!index[bookKey][capNum]) index[bookKey][capNum] = [];
-      index[bookKey][capNum].push(...(chap.verses || []));
+      const bookKey = normalize(bookName);
+      index[bookKey]   = {};
+      aliasMap[bookKey] = bookKey;
+
+      ["code", "id"].forEach((att) => {
+        const v = bookEl.getAttribute(att);
+        if (v) aliasMap[normalize(v)] = bookKey;
+      });
+
+      const m = bookName.match(/^([1-3])\s+(.+)/);
+      if (m) {
+        const num = m[1];
+        const rest = normalize(m[2]);
+        [
+          `${num}${rest}`,
+          `${num} ${rest}`,
+          `${["primer","segon","tercer"][num-1]} ${rest}`,
+          rest
+        ].forEach((a) => (aliasMap[normalize(a)] = bookKey));
+      }
+
+      bookEl.querySelectorAll("chapter").forEach((ch) => {
+        const capNum = +ch.getAttribute("number");
+        index[bookKey][capNum] = Array.from(ch.querySelectorAll("verse")).map(
+          (v) => ({
+            verseNo: +v.getAttribute("number"),
+            text: v.textContent.trim(),
+          })
+        );
+      });
     });
 
-    // Aliases automàtics 1a/2a/3a (ex. "1a Corintis")
-    const m = canon.match(/^([1-3])a?\s+(.+)$/i);
-    if (m) {
-      const num = m[1];
-      const rest = normalize(m[2]);
-      [
-        `${num} ${rest}`,
-        `${num}${rest}`,
-        `${["primer", "segon", "tercer"][num - 1]} ${rest}`,
-      ].forEach((a) => (aliasMap[normalize(a)] = bookKey));
-      if (!aliasMap[rest]) aliasMap[rest] = bookKey;
-    }
-  });
+    Object.entries(customAliases).forEach(([k, v]) => {
+      aliasMap[normalize(k)] = normalize(v);
+    });
 
-  // Aliases definits per l’usuari
-  Object.entries(customAliases).forEach(([k, v]) => {
-    aliasMap[normalize(k)] = normalize(v);
-  });
+  } finally {
+    loading.style.display = "none";
+  }
 
-  loading.style.display = "none";
-
-  // ────────────────────────────────────────
-  // Cerca
-  btn.addEventListener("click", process);
-  inputEl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) process();
-  });
+  // ───────────── Funcions d'UI ─────────────
+  function clearAll() {
+    inputEl.value = "";
+    outDiv.innerHTML = "";
+    copyAllBtn.style.display = "none";
+    inputEl.focus();
+  }
 
   function process() {
     outDiv.innerHTML = "";
     copyAllBtn.style.display = "none";
+
     const raw = inputEl.value.trim();
     if (!raw) return;
 
-    // 1️⃣ Separem per línies, netejant bullets i puntuació final
-    const lines = raw
+    const refs = raw
       .split(/\n+/)
-      .map((l) =>
-        l
-          .replace(/^\s*[-•*] ?/, "") // guió o bullet
-          .replace(/[.,;·]+$/, "") // puntuació final
-          .trim()
-      )
-      .filter(Boolean);
-
-    // 2️⃣ A cada línia, separem per ", " (coma + espais)
-    const refs = [];
-    lines.forEach((line) => {
-      line.split(/,\s+/).forEach((r) => {
-        const t = r.trim();
-        if (t) refs.push(t);
-      });
-    });
+      .flatMap((line) =>
+        line
+          .replace(/^\s*[-•*]\s*/, "")
+          .replace(/[.,;·]+$/, "")
+          .split(/,\s+/)
+          .map((r) => r.trim())
+          .filter(Boolean)
+      );
 
     const errors = [];
 
@@ -133,72 +137,57 @@
       const m = ref.match(
         /^(.+?)\s+(\d+):(\d+(?:[-–]\d+)?(?:,\d+(?:[-–]\d+)?)*)$/
       );
-      if (!m) {
-        errors.push(`Format invàlid: ${ref}`);
-        return;
-      }
-      let [, bookRaw, capStr, versSpec] = m;
-      const bookKey = aliasMap[normalize(bookRaw)];
-      if (!bookKey) {
-        errors.push(`Llibre no trobat: ${bookRaw}`);
-        return;
-      }
-      const cap = parseInt(capStr, 10);
-      const capData = index[bookKey][cap];
-      if (!capData) {
-        errors.push(`Capítol no trobat: ${bookRaw} ${cap}`);
-        return;
-      }
+      if (!m) { errors.push(`Format invàlid: ${ref}`); return; }
 
-      // Expandeix versSpec (ex. 3-5,7)
+      const [, bookRaw, capStr, versSpec] = m;
+      const bookKey = aliasMap[normalize(bookRaw)];
+      if (!bookKey) { errors.push(`Llibre no trobat: ${bookRaw}`); return; }
+
+      const capNum = +capStr;
+      const capData = index[bookKey][capNum];
+      if (!capData) { errors.push(`Capítol no trobat: ${bookRaw} ${capNum}`); return; }
+
       const targets = [];
-      versSpec.split(",").forEach((chunk) => {
-        if (/[-–]/.test(chunk)) {
-          const [s, e] = chunk.split(/[-–]/).map((v) => parseInt(v, 10));
+      versSpec.split(",").forEach((c) => {
+        if (/[-–]/.test(c)) {
+          const [s, e] = c.split(/[-–]/).map(Number);
           for (let v = s; v <= e; v++) targets.push(v);
-        } else {
-          targets.push(parseInt(chunk, 10));
-        }
+        } else targets.push(+c);
       });
 
-      // Selecciona versos
-      const verses = capData.filter((v) => targets.includes(parseInt(v.verseNo, 10)));
-      if (!verses.length) {
-        errors.push(`Versos no trobats: ${ref}`);
-        return;
-      }
+      const verses = capData.filter((v) => targets.includes(v.verseNo));
+      if (!verses.length) { errors.push(`Versos no trobats: ${ref}`); return; }
 
-      // Bloc / renderització
       const bloc = document.createElement("div");
       bloc.className = "bloc";
+
       const tit = document.createElement("div");
       tit.className = "titol";
-      const reference = `${bookRaw.toUpperCase()} ${cap}:${versSpec}`;
-      tit.textContent = reference;
+      tit.textContent = `${bookRaw.toUpperCase()} ${capNum}:${versSpec}`;
       bloc.appendChild(tit);
-      const text = verses
-        .map((v) => (v.text || "").trim())
-        .join(" ");
+
+      const txt = verses.map((v) => v.text).join(" ");
       const txtDiv = document.createElement("div");
       txtDiv.className = "verset";
-      txtDiv.textContent = text;
-      txtDiv.dataset.clip = `${reference}\n${text}`;
+      txtDiv.textContent = txt;
+      txtDiv.dataset.clip = `${tit.textContent}\n${txt}`;
       bloc.appendChild(txtDiv);
+
       const copyBtn = document.createElement("button");
       copyBtn.textContent = "Copiar";
-      copyBtn.addEventListener("click", () => {
+      copyBtn.onclick = () => {
         navigator.clipboard.writeText(txtDiv.dataset.clip);
         showToast("Copiat");
-      });
+      };
       bloc.appendChild(copyBtn);
+
       outDiv.appendChild(bloc);
     });
 
-    // Errors
-    errors.forEach((er) => {
+    errors.forEach((e) => {
       const d = document.createElement("div");
       d.className = "error";
-      d.textContent = er;
+      d.textContent = e;
       outDiv.appendChild(d);
     });
 
@@ -214,4 +203,11 @@
       };
     }
   }
+
+  // ───────────── Esdeveniments ─────────────
+  btnSearch.addEventListener("click", process);
+  btnClear .addEventListener("click", clearAll);
+  inputEl   .addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) process();
+  });
 })();

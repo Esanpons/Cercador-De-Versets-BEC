@@ -1,9 +1,4 @@
-# SeekLogos
-
-
-
-
-
+# Seek Logos
 
 ## Licencia
 
