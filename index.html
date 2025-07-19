@@ -10,8 +10,13 @@
 
 <body>
     <h1>Cerca, investiga i troba la Paraula.</h1>
-    <h2>Benvinguts a Seek Logos, el teu cercador bíblic amb la versió BEC.</h2>
+    <h2>Benvinguts a Seek Logos, el teu cercador bíblic.</h2>
 
+    <!-- 🔽 Selector de versió -->
+    <label for="versionSelect">Versió bíblica:</label>
+    <select id="versionSelect"></select>
+
+    <!-- 🔽 Selector de mode -->
     <select id="searchMode">
         <option value="refs">Grup de versets</option>
         <option value="words">Paraules</option>
@@ -26,21 +31,21 @@
                 Pots afegir els teus àlies al bloc JSON que hi ha a sota.
             </p>
             <pre style="margin-top:-0.5rem;">
-                Mateu 23:23-29, 1 Timoteu 1:8-10, Colossencs 2:14,16-17
+        Mateu 23:23-29, 1 Timoteu 1:8-10, Colossencs 2:14,16-17
 
-                Marc 15:1-2
-                2 Timoteu 1:8-10
-                Gènesi 2:14,16-17
+        Marc 15:1-2
+        2 Timoteu 1:8-10
+        Gènesi 2:14,16-17
 
-                - Lluc 23:23-29
-                - Romans 8:8-10
-                - Efesis 5:21,23-25
-            </pre>
+        - Lluc 23:23-29
+        - Romans 8:8-10
+        - Efesis 5:21,23-25
+      </pre>
         </div>
         <div id="helpWords" style="display:none">
             <p style="margin-top:0.5rem;">
-                Escriu una o més paraules separades per espais i prem &quot;Cerca
-                paraules&quot;. Pots optar per coincidència exacta amb la casella
+                Escriu una o més paraules separades per espais i prem "Cerca
+                paraules". Pots optar per coincidència exacta amb la casella
                 corresponent.
             </p>
         </div>
@@ -69,14 +74,13 @@
 
     <!-- ───────────── Àlies editables en JSON ───────────── -->
     <script id="dicctionaryData" type="application/json">
-        {
-            "genesis": "Gènesi",
-            "Genesis": "Gènesi",
-            "Salm": "Salms",
-            "Fets dels Apòstols": "Fets"
-        }
+    {
+      "genesis": "Gènesi",
+      "Genesis": "Gènesi",
+      "Salm": "Salms",
+      "Fets dels Apòstols": "Fets"
+    }
   </script>
-
 
     <script id="bookNames" type="application/json">
     [
@@ -95,10 +99,12 @@
       "1 Pere", "2 Pere", "1 Joan", "2 Joan", "3 Joan",
       "Judes", "Apocalipsi"
     ]
-    </script>
+  </script>
 
+    <!-- 🔁 JavaScript: inicialització -->
+    <script src="js/index.js" defer></script>
 
-    <!-- Codi JavaScript extern (carregat al final) -->
+    <!-- 🔍 JavaScript de funcionalitats -->
     <script src="js/verse-search.js" defer></script>
     <script src="js/word-search.js" defer></script>
 </body>
